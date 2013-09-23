@@ -1,0 +1,7 @@
+{
+  "localRoot": "/Users/juha",
+  "remoteRoot": "/Volumes/Yhteinen",
+  "paths": [
+    { "local": "Pictures/Valokuvat/2013", "remote": "Valokuvat/2013" }
+  ]
+}
