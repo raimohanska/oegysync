@@ -38,4 +38,6 @@ rsync path root = do
           putStrLn output
 
 rsyncIncludes :: [String] -> [String]
-rsyncIncludes pathElems = map joinPaths $ filter (/= []) $ inits pathElems
+rsyncIncludes pathElems = map wrap $ paths ++ [last paths ++ "/**/"]
+  where paths = map ((++ "/") . joinPaths) $ filter (/= []) $ inits pathElems
+        wrap path = "--include='" ++ path ++ "'"
