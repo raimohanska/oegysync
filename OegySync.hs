@@ -19,22 +19,24 @@ main = do
 
 sync :: Conf -> PathPair -> IO ()
 sync conf path = do
-  let localPath = subPath (local $ root $ conf) (local path)
-  let remotePath = subPath (remote $ root $ conf) (remote path)
-  putStrLn $ "Syncing " ++ localPath ++ " <-> " ++ remotePath
   rsync path (root conf)
 
 rsync :: PathPair -> PathPair -> IO ()
 rsync path root = do
-    let excludes = ["--exclude='.DS_Store'"]
     let remoteDir = joinPaths [remote root, remote path]
     let localDir = joinPaths [local root, local path]
-    let paths = [(remoteDir ++ "/"), (localDir ++ "/")]
+    rsync1way remoteDir localDir
+    rsync1way localDir remoteDir 
+
+rsync1way :: Path -> Path -> IO ()
+rsync1way src dst = do
+    putStrLn $ "Syncing " ++ src ++ " --> " ++ dst
+    let excludes = ["--exclude='.DS_Store'"]
+    let paths = [(src ++ "/"), (dst ++ "/")]
     let rsyncOptions = ["-ruht", "--progress"] ++ excludes ++ paths
-    exec "mkdir" ["-p", localDir]
+    exec "mkdir" ["-p", dst]
     output <- exec "rsync" rsyncOptions
     putStrLn "done"
-    putStrLn output
 
 exec :: String -> [String] -> IO String
 exec program args = do
