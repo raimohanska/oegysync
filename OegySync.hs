@@ -26,18 +26,21 @@ sync conf path = do
 
 rsync :: PathPair -> PathPair -> IO ()
 rsync path root = do
-    let includes = []
-    let excludes = ["--exclude='*'", "--exclude='.DS_Store'"]
-    let paths = [remote root, local root]
-    let rsyncOptions = ["-ruh", "--progress", "--include='*.*'"] ++ includes ++ excludes ++ paths
-    putStrLn $ show rsyncOptions
-    result <- readProcessWithExitCode "echo" rsyncOptions []
-    case result of
-        (ExitSuccess, output, _) -> do
-          putStrLn "done"
-          putStrLn output
+    let excludes = ["--exclude='.DS_Store'"]
+    let remoteDir = joinPaths [remote root, remote path]
+    let localDir = joinPaths [local root, local path]
+    let paths = [(remoteDir ++ "/"), (localDir ++ "/")]
+    let rsyncOptions = ["-ruht", "--progress"] ++ excludes ++ paths
+    exec "mkdir" ["-p", localDir]
+    output <- exec "rsync" rsyncOptions
+    putStrLn "done"
+    putStrLn output
 
-rsyncIncludes :: [String] -> [String]
-rsyncIncludes pathElems = map wrap $ paths ++ [last paths ++ "/**/"]
-  where paths = map ((++ "/") . joinPaths) $ filter (/= []) $ inits pathElems
-        wrap path = "--include='" ++ path ++ "'"
+exec :: String -> [String] -> IO String
+exec program args = do
+    result <- readProcessWithExitCode program args []
+    case result of
+        (ExitSuccess, output, _) -> return output
+        (ExitFailure code, _, output) -> do
+          putStrLn output
+          fail $ "exit code " ++ (show code)
