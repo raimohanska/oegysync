@@ -7,7 +7,7 @@ import qualified Data.ByteString.Lazy as L8
 import Path
 import System.Process
 import System.Exit
-import System.Directory(doesDirectoryExist)
+import System.Directory(doesDirectoryExist, getHomeDirectory, doesFileExist)
 import Data.List(inits)
 import Control.Monad(when)
 
@@ -15,9 +15,17 @@ data PathPair = Path { local :: Path, remote :: Path } deriving (Show, Data, Typ
 data Conf = Conf { root :: PathPair, paths :: [PathPair] } deriving (Show, Data, Typeable)
 
 main = do
-  string <- L8.readFile ".oegysyncrc"
+  configFile <- getConfigFile
+  string <- L8.readFile configFile
   let conf = fromJust $ decode string :: Conf
   mapM_ (sync conf) (paths conf)
+
+getConfigFile = do
+  let fileName = ".oegysyncrc"
+  exists <- doesFileExist fileName
+  if exists 
+    then putStrLn "using local config" >> return fileName
+    else getHomeDirectory >>= return . (++ ("/" ++ fileName))
 
 sync :: Conf -> PathPair -> IO ()
 sync conf path = do
