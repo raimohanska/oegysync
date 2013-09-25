@@ -9,7 +9,7 @@ import System.Process
 import System.Exit
 import System.Directory(doesDirectoryExist, getHomeDirectory, doesFileExist)
 import Data.List(inits)
-import Control.Monad(when)
+import Control.Monad(when, unless)
 
 data PathPair = Path { local :: Path, remote :: Path } deriving (Show, Data, Typeable)
 data Conf = Conf { root :: PathPair, paths :: [PathPair] } deriving (Show, Data, Typeable)
@@ -45,9 +45,16 @@ rsync1way src dst = do
       let excludes = ["--exclude='.DS_Store'"]
       let paths = [(src ++ "/"), (dst ++ "/")]
       let rsyncOptions = ["-ruht", "--progress"] ++ excludes ++ paths
-      exec "mkdir" ["-p", dst]
+      ensureExists dst
       exec "rsync" rsyncOptions
       putStrLn "done"
+
+ensureExists :: Path -> IO ()
+ensureExists path = do
+  exists <- doesDirectoryExist path
+  unless exists $ do
+    putStrLn $ "creating " ++ path
+    exec "mkdir" ["-p", path]
 
 exec :: String -> [String] -> IO ()
 exec program args = do
