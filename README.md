@@ -31,6 +31,7 @@ Put a file `.oegysyncrc` in your home directory. Something like this.
     { "local": "Pictures/2013", "remote": "Pictures/2013" }
   ]
 }
+```
 
 Then run `oegysync`. It will sync the directories both ways. Won't
 delete anything though.
