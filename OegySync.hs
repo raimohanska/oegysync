@@ -5,9 +5,11 @@ import Data.Data(Data, Typeable)
 import Data.Maybe(fromJust)
 import qualified Data.ByteString.Lazy as L8
 import Path
-import System.Process(readProcessWithExitCode)
+import System.Process
 import System.Exit
+import System.Directory(doesDirectoryExist)
 import Data.List(inits)
+import Control.Monad(when)
 
 data PathPair = Path { local :: Path, remote :: Path } deriving (Show, Data, Typeable)
 data Conf = Conf { root :: PathPair, paths :: [PathPair] } deriving (Show, Data, Typeable)
@@ -30,19 +32,21 @@ rsync path root = do
 
 rsync1way :: Path -> Path -> IO ()
 rsync1way src dst = do
-    putStrLn $ "Syncing " ++ src ++ " --> " ++ dst
-    let excludes = ["--exclude='.DS_Store'"]
-    let paths = [(src ++ "/"), (dst ++ "/")]
-    let rsyncOptions = ["-ruht", "--progress"] ++ excludes ++ paths
-    exec "mkdir" ["-p", dst]
-    output <- exec "rsync" rsyncOptions
-    putStrLn "done"
+    srcExists <- doesDirectoryExist src
+    when srcExists $ do
+      putStrLn $ "Syncing " ++ src ++ " --> " ++ dst
+      let excludes = ["--exclude='.DS_Store'"]
+      let paths = [(src ++ "/"), (dst ++ "/")]
+      let rsyncOptions = ["-ruht", "--progress"] ++ excludes ++ paths
+      exec "mkdir" ["-p", dst]
+      exec "rsync" rsyncOptions
+      putStrLn "done"
 
-exec :: String -> [String] -> IO String
+exec :: String -> [String] -> IO ()
 exec program args = do
-    result <- readProcessWithExitCode program args []
-    case result of
-        (ExitSuccess, output, _) -> return output
-        (ExitFailure code, _, output) -> do
-          putStrLn output
+    handle <- runProcess program args Nothing Nothing Nothing Nothing Nothing
+    exitCode <- waitForProcess handle
+    case exitCode of
+        ExitSuccess -> return ()
+        (ExitFailure code) -> do
           fail $ "exit code " ++ (show code)
