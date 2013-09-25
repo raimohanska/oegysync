@@ -16,4 +16,4 @@ cabal-version:       >=1.8
 
 executable oegysync
   main-is: OegySync.hs
-  build-depends:       base ==4.6.*, aeson==0.6.1.0, bytestring==0.10.0.2
+  build-depends:       base ==4.6.*, aeson==0.6.1.0, bytestring==0.10.0.2, directory==1.2.0.1, process==1.1.0.2
