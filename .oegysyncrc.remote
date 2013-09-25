@@ -1,7 +1,7 @@
 {
   "root": {
     "local": "/Users/juha",
-    "remote": "/tmp/oegysync"
+    "remote": "/Volumes/Yhteinen"
   },
   "paths": [
     { "local": "Pictures/Valokuvat/2013", "remote": "Valokuvat/2013" }
