@@ -15,8 +15,7 @@ data PathPair = Path { local :: Path, remote :: Path } deriving (Show, Data, Typ
 data Conf = Conf { root :: PathPair, paths :: [PathPair] } deriving (Show, Data, Typeable)
 
 main = do
-  configFile <- getConfigFile
-  string <- L8.readFile configFile
+  string <- getConfigFile >>= L8.readFile
   let conf = fromJust $ decode string :: Conf
   mapM_ (sync conf) (paths conf)
 
