@@ -34,8 +34,8 @@ rsync :: PathPair -> PathPair -> IO ()
 rsync path root = do
     let remoteDir = joinPaths [remote root, remote path]
     let localDir = joinPaths [local root, local path]
-    rsync1way remoteDir localDir
     rsync1way localDir remoteDir 
+    rsync1way remoteDir localDir
 
 rsync1way :: Path -> Path -> IO ()
 rsync1way src dst = do
